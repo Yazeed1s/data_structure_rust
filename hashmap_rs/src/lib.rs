@@ -5,17 +5,20 @@ use core::hash::Hash;
 use core::marker::Copy;
 use std::collections::hash_map::DefaultHasher;
 //use std::hash::Hasher;
+
 const BUCKET_SIZE: usize = 20;
 
 // #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 // struct Bucket<K, V> {
 //     vec: Vec<(K, V)>,
 // }
+
 type Bucket<K, V> = Vec<(K, V)>;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct HashMap<K, V> {
     bucket: Vec<Bucket<K, V>>,
+    items: usize,
 }
 
 impl<K, V> HashMap<K, V>
@@ -28,7 +31,7 @@ where
         for _ in 0..BUCKET_SIZE {
             bucket.push(Vec::new());
         }
-        Self { bucket }
+        Self { bucket, items: 0 }
     }
 
     // fn from(bucket: Vec<(K, V)>) -> Self {
@@ -36,11 +39,17 @@ where
     // }
 
     fn size(&self) -> usize {
-        /*  self.bucket.len() */
-        0
+        // self.bucket.len()
+        self.items
     }
 
-    fn key_hash(&self, key: K) -> u64 {
+    fn is_empty(&self) -> bool {
+        //self.bucket.is_empty()
+        self.items == 0
+    }
+
+    // hash the key
+    fn hash_key(&self, key: &K) -> u64 {
         use std::hash::Hasher;
         let mut hasher = DefaultHasher::new();
         key.hash(&mut hasher);
@@ -49,19 +58,37 @@ where
         index
     }
 
+    // map key to an index
+    fn key_to_bucket(&mut self, key: &K) -> Option<usize> {
+        if self.bucket.is_empty() {
+            return None;
+        }
+        let index = self.hash_key(key);
+        Some(index as usize)
+    }
+
     fn clear(&mut self) {
         self.bucket.clear();
     }
-    fn insert(&mut self, key: K, value: V) -> bool {
-        // self.bucket.push((key, value));
-        // !self.bucket.is_empty()
-        // TODO: calculate hash
-        // TODO: handle collision
-        false
-    }
-    fn is_empty(&self) -> bool {
-        self.bucket.is_empty()
-    }
+    // fn insert(&mut self, key: K, value: V) -> Option<K> {
+    //     let bucket = self.key_to_bucket(&key);
+    //     match bucket.iter_mut().find_map(|f| {
+    //         if f.0 == key {
+    //             std::mem::swap(f, &mut (key, value));
+    //             return Some(key);
+    //         } else {
+    //             return None;
+    //         }
+    //     }) {
+    //         None => bucket.push((key, value)),
+    //         _ => (),
+    //     }
+    //     // self.bucket.push((key, value));
+    //     // !self.bucket.is_empty()
+    //     // TODO: calculate hash
+    //     // TODO: handle collision
+    //     Some(key)
+    // }
     fn remove_by_key(key: K) {}
     // TODO: add resize method
     // TODO: add get method
