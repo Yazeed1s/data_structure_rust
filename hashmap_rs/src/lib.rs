@@ -1,35 +1,63 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
+
+use core::hash::Hash;
+use core::marker::Copy;
+use std::collections::hash_map::DefaultHasher;
+//use std::hash::Hasher;
+const BUCKET_SIZE: usize = 20;
+
+// #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 // struct Bucket<K, V> {
 //     vec: Vec<(K, V)>,
 // }
+type Bucket<K, V> = Vec<(K, V)>;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct HashMap<K, V> {
-    bucket: Vec<(K, V)>,
+    bucket: Vec<Bucket<K, V>>,
 }
 
-impl<K, V: Ord> HashMap<K, V> {
+impl<K, V> HashMap<K, V>
+where
+    K: Hash + PartialEq + PartialOrd + Copy,
+    V: Ord,
+{
     fn new() -> Self {
-        HashMap { bucket: Vec::new() }
+        let mut bucket = Vec::with_capacity(BUCKET_SIZE);
+        for _ in 0..BUCKET_SIZE {
+            bucket.push(Vec::new());
+        }
+        Self { bucket }
     }
 
-    fn from(bucket: Vec<(K, V)>) -> Self {
-        HashMap { bucket }
-    }
+    // fn from(bucket: Vec<(K, V)>) -> Self {
+    //     /*  HashMap { bucket:  } */
+    // }
 
     fn size(&self) -> usize {
-        self.bucket.len()
+        /*  self.bucket.len() */
+        0
+    }
+
+    fn key_hash(&self, key: K) -> u64 {
+        use std::hash::Hasher;
+        let mut hasher = DefaultHasher::new();
+        key.hash(&mut hasher);
+        let hash = hasher.finish();
+        let index = hash % (BUCKET_SIZE as u64);
+        index
     }
 
     fn clear(&mut self) {
         self.bucket.clear();
     }
     fn insert(&mut self, key: K, value: V) -> bool {
-        self.bucket.push((key, value));
-        !self.bucket.is_empty()
+        // self.bucket.push((key, value));
+        // !self.bucket.is_empty()
         // TODO: calculate hash
         // TODO: handle collision
+        false
     }
     fn is_empty(&self) -> bool {
         self.bucket.is_empty()
